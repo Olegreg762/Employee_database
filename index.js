@@ -10,7 +10,22 @@ const db_connection = sql.createConnection(
     },
 console.log(`Connected to database`)
 );
-db_connection.query("SELECT * FROM employee", function(err, results){
+
+const action_list = [
+    {
+        type: "list",
+        name: "action",
+        message: "What Action Are You Needing To Complete",
+        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add A Role", "Add An Employee", "Update An Employee Role"]
+    }
+]
+
+function view_all(){
+    db_connection.query(
+        "SELECT * FROM employee", function(err, results){
     if (err) throw err;
     console.table(results)
-});
+    });
+}
+
+
