@@ -50,6 +50,7 @@ function view_all_departments(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
@@ -59,6 +60,7 @@ function view_all_roles(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
@@ -76,6 +78,7 @@ function view_all_employees(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
@@ -85,6 +88,7 @@ function add_a_department(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
@@ -94,6 +98,7 @@ function add_a_role(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
@@ -103,6 +108,7 @@ function add_an_employee(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
@@ -112,6 +118,7 @@ function update_an_employee_role(){
         `, function(err, results){
     if (err) throw err;
     console.table(results)
+    main();
     });
 };
 
