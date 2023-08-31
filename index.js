@@ -116,7 +116,7 @@ function add_a_department(){
             `INSERT INTO department (name)
                 VALUES ("${dept_add.department}");
             `);
-        console.log(`Succesfully added ${dept_add.department} to Departments `)
+        console.log(`Succesfully Added ${dept_add.department} to Departments `)
         view_all_departments();
         });
     };
@@ -152,34 +152,46 @@ function add_a_role(){
     ]).then((role_add)=>{
         db_connection.query(
             `INSERT INTO role (title, salary, department_id)
-                VALUES ("${role_add.role}", ${role_add.salary}, ${role_add.department_id});
-            `);
+                VALUES ("${role_add.role}", ${role_add.salary}, ${role_add.department_id});`);
         const department_name = departments.find(dept => dept.value === role_add.department_id);
-        console.log(`Succesfully added ${role_add.role} To ${department_name.name} Department At The Salary of $${role_add.salary}!`);
+        console.log(`Succesfully Added ${role_add.role} To ${department_name.name} Department At The Salary of $${role_add.salary}!`);
         view_all_roles();
     })
         });
 };
 
 function add_an_employee(){
+    db_connection.query(
+        `SELECT * FROM department;`, 
+    function(err, results){
+        if (err) throw err;
+        const departments = results.map(department =>({
+            name: department.name,
+            value: department.id
+    }));
+
     inquirer.prompt([
         {
-            type: "input",
-            name: "department",
-            message: "Which Department To Add Employee?",
-            validate: validate_input
-        },
+            type: "list",
+            name: "department_id",
+            message: "Which Department Will Role Be Added To?",
+            choices: departments
+        }
+    ]).then((chosen_depart) => {
+        db_connection.query(
+            `SELECT * FROM role WHERE department_id = ${chosen_depart.department_id};`, 
+        function(err, results){
+            if (err) throw err;
+            const roles = results.map(role =>({
+                name: role.title,
+                value: role.id
+        }));
+    inquirer.prompt([
         {
-            type: "input",
-            name: "role",
+            type: "list",
+            name: "role_id",
             message: "What Title Will the Employee Have?",
-            validate: validate_input
-        },
-        {
-            type: "input",
-            name: "salary",
-            message: "What Will Be The Employee's Salary?",
-            validate: validate_input1
+            choices: roles
         },
         {
             type: "input",
@@ -207,7 +219,10 @@ function add_an_employee(){
         console.log(`Succesfully added ${employee_add.first} ${employee_add.last} to ${employee_add.department}!`)
         main();
         });
-};
+    });
+    });
+    });
+}
 
 function update_an_employee_role(){
     inquirer.prompt([
