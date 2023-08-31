@@ -30,14 +30,14 @@ const action_list = [
 function main(){
     inquirer.prompt(action_list).then(data =>{
         const actions = {
-            "View All Departments":"",
-            "View All Roles":"",
+            "View All Departments":view_all_departments,
+            "View All Roles":view_all_roles,
             "View All Employees":view_all_employees,
-            "Add A Department":"",
-            "Add A Role":"",
-            "Add An Employee":"",
-            "Update An Employee Role":"",
-            "Exit": ()=>{console.log("BYE"); db_connection.end();}
+            "Add A Department":add_a_department,
+            "Add A Role":add_a_role,
+            "Add An Employee":add_an_employee,
+            "Update An Employee Role":update_an_employee_role,
+            "Exit": ()=>{console.log("BYE!"); db_connection.end();}
         };
         const selected_action = actions[data.action];
         selected_action();
@@ -46,7 +46,7 @@ function main(){
 
 function view_all_departments(){
     db_connection.query(
-        `SELECT 
+        `SELECT * FROM department;
         `, function(err, results){
     if (err) throw err;
     console.table(results)
@@ -57,6 +57,12 @@ function view_all_departments(){
 function view_all_roles(){
     db_connection.query(
         `SELECT
+            role.id as role_id,
+            role.title as title,
+            department.name as department,
+            role.salary
+        FROM role
+        JOIN department ON role.department_id = department.id;
         `, function(err, results){
     if (err) throw err;
     console.table(results)
@@ -67,10 +73,11 @@ function view_all_roles(){
 function view_all_employees(){
     db_connection.query(
         `SELECT
-            department.name AS department_name,
-            role.title as role_title,
             CONCAT(employee.first_name, " ", employee.last_name) AS employee_name,
-            CONCAT(manager.first_name, " ", manager.last_name) AS manager_name
+            role.title as title,
+            department.name as department,
+            role.salary,
+            CONCAT(manager.first_name, " ", manager.last_name) AS manager
         FROM employee
         JOIN role ON employee.role_id = role.id
         JOIN department ON role.department_id = department.id
