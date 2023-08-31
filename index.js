@@ -16,9 +16,51 @@ const action_list = [
         type: "list",
         name: "action",
         message: "What Action Are You Needing To Complete",
-        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add A Role", "Add An Employee", "Update An Employee Role"]
+        choices: [
+            "View All Departments",
+            "View All Roles",
+            "View All Employees",
+            "Add A Department",
+            "Add A Role",
+            "Add An Employee",
+            "Update An Employee Role",
+            "Exit"]
     }
 ]
+function main(){
+    inquirer.prompt(action_list).then(data =>{
+        const actions = {
+            "View All Departments":"",
+            "View All Roles":"",
+            "View All Employees":view_all_employees,
+            "Add A Department":"",
+            "Add A Role":"",
+            "Add An Employee":"",
+            "Update An Employee Role":"",
+            "Exit": ()=>{console.log("BYE"); db_connection.end();}
+        };
+        const selected_action = actions[data.action];
+        selected_action();
+    })
+};
+
+function view_all_departments(){
+    db_connection.query(
+        `SELECT 
+        `, function(err, results){
+    if (err) throw err;
+    console.table(results)
+    });
+};
+
+function view_all_roles(){
+    db_connection.query(
+        `SELECT
+        `, function(err, results){
+    if (err) throw err;
+    console.table(results)
+    });
+};
 
 function view_all_employees(){
     db_connection.query(
@@ -35,4 +77,42 @@ function view_all_employees(){
     if (err) throw err;
     console.table(results)
     });
-}
+};
+
+function add_a_department(){
+    db_connection.query(
+        `SELECT
+        `, function(err, results){
+    if (err) throw err;
+    console.table(results)
+    });
+};
+
+function add_a_role(){
+    db_connection.query(
+        `SELECT
+        `, function(err, results){
+    if (err) throw err;
+    console.table(results)
+    });
+};
+
+function add_an_employee(){
+    db_connection.query(
+        `SELECT
+        `, function(err, results){
+    if (err) throw err;
+    console.table(results)
+    });
+};
+
+function update_an_employee_role(){
+    db_connection.query(
+        `SELECT
+        `, function(err, results){
+    if (err) throw err;
+    console.table(results)
+    });
+};
+
+main()
