@@ -20,12 +20,19 @@ const action_list = [
     }
 ]
 
-function view_all(){
+function view_all_employees(){
     db_connection.query(
-        "SELECT * FROM employee", function(err, results){
+        `SELECT
+            department.name AS department_name,
+            role.title as role_title,
+            CONCAT(employee.first_name, " ", employee.last_name) AS employee_name,
+            CONCAT(manager.first_name, " ", manager.last_name) AS manager_name
+        FROM employee
+        JOIN role ON employee.role_id = role.id
+        JOIN department ON role.department_id = department.id
+        LEFT JOIN employee AS manager ON employee.manager_id = manager.id; 
+        `, function(err, results){
     if (err) throw err;
     console.table(results)
     });
 }
-
-
