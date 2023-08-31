@@ -3,7 +3,14 @@ const sql = require("mysql2");
 
 function validate_input(input){
     if(input == ""){
-        return console.log("Cannot be Blank")
+        return console.log("Cannot Be Blank")
+    }
+    return true
+};
+
+function validate_input_number(input){
+    if(input == "" || isNaN(input)){
+        return console.log("Cannot Be Blank & Must be A Number")
     }
     return true
 };
@@ -22,7 +29,7 @@ const action_list = [
     {
         type: "list",
         name: "action",
-        message: "What Action Are You Needing To Complete",
+        message: "What Action Are You Needing To Complete?",
         choices: [
             "View All Departments",
             "View All Roles",
@@ -101,7 +108,7 @@ function add_a_department(){
         {
             type: "input",
             name: "department",
-            message: "Name Of Department To Be Added",
+            message: "Name Of Department To Be Added?",
             validate: validate_input
         }
     ]).then((dept_add)=>{
@@ -110,38 +117,113 @@ function add_a_department(){
                 VALUES ("${dept_add.department}");
             `);
         console.log(`Succesfully added ${dept_add.department} to Departments `)
-        main();
+        view_all_departments();
         });
     };
 
 function add_a_role(){
     db_connection.query(
-        `SELECT
+        `SELECT * FROM department;
         `, function(err, results){
     if (err) throw err;
-    console.table(results)
-    main();
-    });
+    const departments = results.map(department =>({
+        name: department.name,
+        value: department.id
+    }));
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "department_id",
+            message: "Which Department Will Role Be Added To?",
+            choices: departments
+        },
+        {
+            type: "input",
+            name: "role",
+            message: "What Is The Title Of The New Role??",
+            validate: validate_input
+        },
+        {
+            type: "input",
+            name: "salary",
+            message: "What Will Be The Role's Salary?",
+            validate: validate_input_number
+        }
+    ]).then((role_add)=>{
+        db_connection.query(
+            `INSERT INTO role (title, salary, department_id)
+                VALUES ("${role_add.role}", ${role_add.salary}, ${role_add.department_id});
+            `);
+        const department_name = departments.find(dept => dept.value === role_add.department_id);
+        console.log(`Succesfully added ${role_add.role} To ${department_name.name} Department At The Salary of $${role_add.salary}!`);
+        view_all_roles();
+    })
+        });
 };
 
 function add_an_employee(){
-    db_connection.query(
-        `SELECT
-        `, function(err, results){
-    if (err) throw err;
-    console.table(results)
-    main();
-    });
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "Which Department To Add Employee?",
+            validate: validate_input
+        },
+        {
+            type: "input",
+            name: "role",
+            message: "What Title Will the Employee Have?",
+            validate: validate_input
+        },
+        {
+            type: "input",
+            name: "salary",
+            message: "What Will Be The Employee's Salary?",
+            validate: validate_input1
+        },
+        {
+            type: "input",
+            name: "first",
+            message: "What Is The Employee's First Name?",
+            validate: validate_input
+        },
+        {
+            type: "input",
+            name: "last",
+            message: "What Is The Employee's Last Name?",
+            validate: validate_input
+        },
+        {
+            type: "input",
+            name: "manager",
+            message: "Who Is The Employee's Manager?",
+            validate: validate_input
+        }
+
+    ]).then((employee_add)=>{
+        db_connection.query(
+            `
+            `);
+        console.log(`Succesfully added ${employee_add.first} ${employee_add.last} to ${employee_add.department}!`)
+        main();
+        });
 };
 
 function update_an_employee_role(){
-    db_connection.query(
-        `SELECT
-        `, function(err, results){
-    if (err) throw err;
-    console.table(results)
-    main();
-    });
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "Name Of Department To Be Added?",
+            validate: validate_input
+        }
+    ]).then((dept_add)=>{
+        db_connection.query(
+            `
+            `);
+        console.log(`Succesfully added ${dept_add.department} to Departments `)
+        main();
+        });
 };
 
 main()
