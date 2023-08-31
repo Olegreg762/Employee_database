@@ -1,6 +1,13 @@
 const inquirer = require("inquirer");
 const sql = require("mysql2");
 
+function validate_input(input){
+    if(input == ""){
+        return console.log("Cannot be Blank")
+    }
+    return true
+};
+
 const db_connection = sql.createConnection(
     {
         host: "localhost",
@@ -90,14 +97,22 @@ function view_all_employees(){
 };
 
 function add_a_department(){
-    db_connection.query(
-        `SELECT
-        `, function(err, results){
-    if (err) throw err;
-    console.table(results)
-    main();
-    });
-};
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "Name Of Department To Be Added",
+            validate: validate_input
+        }
+    ]).then((dept_add)=>{
+        db_connection.query(
+            `INSERT INTO department (name)
+                VALUES ("${dept_add.department}");
+            `);
+        console.log(`Succesfully added ${dept_add.department} to Departments `)
+        main();
+        });
+    };
 
 function add_a_role(){
     db_connection.query(
