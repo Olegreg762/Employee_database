@@ -163,9 +163,9 @@ function add_a_role(){
 function add_an_employee(){
     db_connection.query(
         `SELECT * FROM department;`, 
-    function(err, results){
+    function(err, department_results){
         if (err) throw err;
-        const departments = results.map(department =>({
+        const departments = department_results.map(department =>({
             name: department.name,
             value: department.id
     }));
@@ -177,12 +177,12 @@ function add_an_employee(){
             message: "Which Department Will Role Be Added To?",
             choices: departments
         }
-    ]).then((chosen_depart) => {
+    ]).then((employee_add) => {
         db_connection.query(
-            `SELECT * FROM role WHERE department_id = ${chosen_depart.department_id};`, 
-        function(err, results){
+            `SELECT * FROM role WHERE department_id = ${employee_add.department_id};`, 
+        function(err, role_results){
             if (err) throw err;
-            const roles = results.map(role =>({
+            const roles = role_results.map(role =>({
                 name: role.title,
                 value: role.id
         }));
@@ -204,25 +204,41 @@ function add_an_employee(){
             name: "last",
             message: "What Is The Employee's Last Name?",
             validate: validate_input
-        },
-        {
-            type: "input",
-            name: "manager",
-            message: "Who Is The Employee's Manager?",
-            validate: validate_input
         }
-
     ]).then((employee_add)=>{
         db_connection.query(
-            `
-            `);
-        console.log(`Succesfully added ${employee_add.first} ${employee_add.last} to ${employee_add.department}!`)
+            `SELECT employee.id,
+            CONCAT(employee.first_name, " ", employee.last_name) AS manager_name
+            FROM employee
+            INNER JOIN role ON employee.role_id = role.id
+            WHERE role.id = ${employee_add.role_id}`, 
+        function(err, managers_results){
+            if (err) throw err;
+            const managers = managers_results.map(manager =>({
+                name: manager.manager_name,
+                value: manager.id
+        }));
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "manager_id",
+            message: "Who Is The Employee's Manager?",
+            choices: managers
+        }
+    ]).then((employee_add)=>{
+        // db_connection.query(
+        //     `
+        //     `);
+        console.log(`Succesfully Added ${employee_add.first} ${employee_add.last} To Database!`)
         main();
         });
     });
     });
     });
-}
+    });
+    });    
+};
+    
 
 function update_an_employee_role(){
     inquirer.prompt([
