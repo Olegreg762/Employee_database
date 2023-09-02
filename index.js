@@ -226,8 +226,7 @@ function add_an_employee(){
                         `, 
                         function(err, managers_results){
                             if (err) throw err;
-                            console.log(managers_results);
-                            if(managers_results == []){
+                            if(managers_results.length === 0){
                                 employee_data.manager_id = null;
                                 employee_data.manager_name = `${employee_data.first_name} ${employee_data.last_name}`;
                             }else{
