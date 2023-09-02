@@ -179,6 +179,8 @@ function add_an_employee(){
             choices: departments
         }
         ]).then((department_choice) => {
+            const department_name = departments.find(dept => dept.value === department_choice.department_id);
+            employee_data.department_name = department_name.name;
             employee_data.department_id = department_choice.department_id;
             db_connection.query(
                 `SELECT * FROM role WHERE department_id = ${department_choice.department_id};`, 
@@ -208,41 +210,35 @@ function add_an_employee(){
                     validate: validate_input
                 }
                 ]).then((role_choice)=>{
+                    const role_name = roles.find(dept => dept.value === role_choice.role_id);
+                    employee_data.role_name = role_name.name;
                     employee_data.role_id = role_choice.role_id;
                     employee_data.first_name = role_choice.first;
                     employee_data.last_name = role_choice.last;
                     db_connection.query(
-                        `SELECT employee.id,
-                        CONCAT(employee.first_name, " ", employee.last_name) AS manager_name
-                        FROM employee
-                        INNER JOIN role ON employee.role_id = role.id
-                        WHERE role.id = ${role_choice.role_id}`, 
+                        `SELECT employee.*
+                        FROM employee, role, department
+                        WHERE employee.role_id = role.id
+                          AND role.department_id = department.id
+                          AND department.name = "${employee_data.department_name}"
+                        ORDER BY role.id ASC
+                        LIMIT 1;
+                        `, 
                         function(err, managers_results){
                             if (err) throw err;
-                            const managers = managers_results.map(manager =>({
-                                name: manager.manager_name,
-                                value: manager.id
-                        }));
-                        inquirer.prompt([
-                            {
-                                type: "list",
-                                name: "manager_id",
-                                message: "Who Is The Employee's Manager?",
-                                choices: managers
-                            }
-                        ]).then((manager_choice)=>{
-                            employee_data.manager_id = manager_choice.manager_id;
-                            // db_connection.query(
-                            //     `
-                            //     `);
-                            console.log(`Succesfully Added ${employee_data.first_name} ${employee_data.last_name}`)
+                            employee_data.manager_id = managers_results[0].id;
+                            employee_data.manager_name = `${managers_results[0].first_name} ${managers_results[0].last_name}`;
+                            db_connection.query(
+                                `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                    VALUES("${employee_data.first_name}","${employee_data.last_name}", ${employee_data.role_id}, ${employee_data.manager_id})
+                                `);
+                            console.log(`Succesfully Added ${employee_data.first_name} ${employee_data.last_name} To The ${employee_data.department_name} Department With The Role ${employee_data.role_name} With ${employee_data.manager_name} As Their Manager.`)
                             main();
                         });
                     });
                 });
             });
-        });
-    });    
+        });    
 };
     
 
