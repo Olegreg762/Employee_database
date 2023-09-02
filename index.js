@@ -41,6 +41,7 @@ const action_list = [
             "Exit"]
     }
 ]
+
 function main(){
     inquirer.prompt(action_list).then(data =>{
         const actions = {
@@ -161,7 +162,7 @@ function add_a_role(){
 };
 
 function add_an_employee(){
-    employee_data = {};
+    let employee_data = {};
     db_connection.query(
         `SELECT * FROM department;`, 
     function(err, department_results){
@@ -170,12 +171,11 @@ function add_an_employee(){
             name: department.name,
             value: department.id
     }));
-
     inquirer.prompt([
         {
             type: "list",
             name: "department_id",
-            message: "Which Department Will Role Be Added To?",
+            message: "Which Department Will Employee Be Added To?",
             choices: departments
         }
         ]).then((department_choice) => {
@@ -243,20 +243,76 @@ function add_an_employee(){
     
 
 function update_an_employee_role(){
+    let update_data = {}
+    db_connection.query(
+        `SELECT id,
+            first_name, last_name FROM employee;`, 
+    function(err, employee_list){
+        if (err) throw err;
+        const employees = employee_list.map(employee =>({
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id,
+            first_name: employee.first_name,
+            last_name: employee.last_name
+        }));
     inquirer.prompt([
         {
-            type: "input",
-            name: "department",
-            message: "Name Of Department To Be Added?",
-            validate: validate_input
+            type: "list",
+            name: "employee_id",
+            message: "Which Employee Would You Like To Update?",
+            choices: employees
         }
-    ]).then((dept_add)=>{
+    ]).then((update_employee)=>{
+        const employee_name = employees.find(employee => employee.value === update_employee.employee_id);
+        update_data.name = employee_name.name;
+        update_data.first_name = employee_name.first_name;
+        update_data.last_name = employee_name.last_name;
+        update_data.id = update_employee.employee_id;
         db_connection.query(
-            `
-            `);
-        console.log(`Succesfully added ${dept_add.department} to Departments `)
-        main();
-        });
+            `SELECT * FROM department;
+            `, function(err, results){
+        if (err) throw err;
+        const departments = results.map(department =>({
+            name: department.name,
+            value: department.id
+        }));
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "department_id",
+                message: `Which Department Will ${update_data.name} Be Moved To?`,
+                choices: departments
+            }
+        ]).then((update_dept) => {
+            const department_name = departments.find(dept => dept.value === update_dept.department_id);
+            update_data.department_name = department_name.name;
+            update_data.department_id = update_dept.department_id;
+            db_connection.query(
+                `SELECT * FROM role WHERE department_id = ${update_dept.department_id};`, 
+            function(err, role_results){
+                    if (err) throw err;
+                    const roles = role_results.map(role =>({
+                        name: role.title,
+                        value: role.id
+                }));
+                inquirer.prompt([
+                {
+                    type: "list",
+                    name: "role_id",
+                    message: `What Will ${update_data.name}'s New Role Be?`,
+                    choices: roles
+                }
+            ]).then((update_role)=>{
+                const role_name = roles.find(dept => dept.value === update_role.role_id);
+                update_data.role_name = role_name.name;
+                update_data.role_id = update_role.role_id;
+                console.log(update_data)
+            })
+})
+})
+})            
+});
+})
 };
 
-main()
+main();
