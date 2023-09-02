@@ -226,14 +226,20 @@ function add_an_employee(){
                         `, 
                         function(err, managers_results){
                             if (err) throw err;
-                            employee_data.manager_id = managers_results[0].id;
-                            employee_data.manager_name = `${managers_results[0].first_name} ${managers_results[0].last_name}`;
+                            console.log(managers_results);
+                            if(managers_results == []){
+                                employee_data.manager_id = null;
+                                employee_data.manager_name = `${employee_data.first_name} ${employee_data.last_name}`;
+                            }else{
+                                employee_data.manager_id = managers_results[0].id;
+                                employee_data.manager_name = `${managers_results[0].first_name} ${managers_results[0].last_name}`;
+                            };
                             db_connection.query(
                                 `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                                     VALUES("${employee_data.first_name}","${employee_data.last_name}", ${employee_data.role_id}, ${employee_data.manager_id})
                                 `);
                             console.log(`Succesfully Added ${employee_data.first_name} ${employee_data.last_name} To The ${employee_data.department_name} Department With The Role ${employee_data.role_name} With ${employee_data.manager_name} As Their Manager.`)
-                            main();
+                            view_all_employees();
                         });
                     });
                 });
@@ -307,12 +313,37 @@ function update_an_employee_role(){
                 update_data.role_name = role_name.name;
                 update_data.role_id = update_role.role_id;
                 console.log(update_data)
-            })
-})
-})
-})            
+                db_connection.query(
+                    `SELECT employee.*
+                    FROM employee, role, department
+                    WHERE employee.role_id = role.id
+                      AND role.department_id = department.id
+                      AND department.name = "${update_data.department_name}"
+                    ORDER BY role.id ASC
+                    LIMIT 1;
+                    `, 
+                    function(err, update_manager){
+                        if (err) throw err;
+                        update_data.manager_id = update_manager[0].id;
+                        update_data.manager_name = `${update_manager[0].first_name} ${update_manager[0].last_name}`;
+                        db_connection.query(`
+                            UPDATE employee
+                            SET
+                                first_name = "${update_data.first_name}",
+                                last_name = "${update_data.last_name}",
+                                role_id = ${update_data.role_id},
+                                manager_id = ${update_data.manager_id}
+                            WHERE
+                                id = ${update_data.id};`);
+                        console.log(`Succesfully Updated ${update_data.first_name} ${update_data.last_name} To The ${update_data.department_name} Department With The Role ${update_data.role_name} With ${update_data.manager_name} As Their Manager.`)
+                        view_all_employees();
 });
-})
+});
+});
+});
+});           
+});
+});
 };
 
 main();
