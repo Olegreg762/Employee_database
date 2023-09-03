@@ -22,7 +22,13 @@ const db_connection = sql.createConnection(
         password: "",
         database: "employee_db"
     },
-console.log(`Connected to database`)
+console.log(`
+_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+WELCOME TO THE EMPLOYEE DATABASE!
+
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+`)
 );
 
 const action_list = [
