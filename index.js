@@ -1,20 +1,21 @@
+// Module imports
 const inquirer = require("inquirer");
 const sql = require("mysql2");
-
+// Function for validating prompt inout is not blank
 function validate_input(input){
     if(input == ""){
         return console.log("Cannot Be Blank")
     }
     return true
 };
-
+// Function for validating prompt input is not blank and is a number
 function validate_input_number(input){
     if(input == "" || isNaN(input)){
         return console.log("Cannot Be Blank & Must be A Number")
     }
     return true
 };
-
+// Data connection
 const db_connection = sql.createConnection(
     {
         host: "localhost",
@@ -22,6 +23,7 @@ const db_connection = sql.createConnection(
         password: "",
         database: "employee_db"
     },
+    // Welcome Splash
 console.log(`
 _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -30,7 +32,7 @@ WELCOME TO THE EMPLOYEE DATABASE!
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 `)
 );
-
+// Inital prompt list
 const action_list = [
     {
         type: "list",
@@ -47,8 +49,9 @@ const action_list = [
             "Exit"]
     }
 ]
-
+// Main function of application to choose action to do
 function main(){
+    // Dictonary that excutes function correlating to action_list choice
     inquirer.prompt(action_list).then(data =>{
         const actions = {
             "View All Departments":view_all_departments,
@@ -64,7 +67,7 @@ function main(){
         selected_action();
     })
 };
-
+// Function to View all departments
 function view_all_departments(){
     db_connection.query(
         `SELECT * FROM department;
@@ -74,7 +77,7 @@ function view_all_departments(){
     main();
     });
 };
-
+// Function for viewinf all roles
 function view_all_roles(){
     db_connection.query(
         `SELECT
@@ -90,7 +93,7 @@ function view_all_roles(){
     main();
     });
 };
-
+// Function to view all employees in database
 function view_all_employees(){
     db_connection.query(
         `SELECT
@@ -109,7 +112,7 @@ function view_all_employees(){
     main();
     });
 };
-
+// Adds an department to the database
 function add_a_department(){
     inquirer.prompt([
         {
@@ -118,6 +121,8 @@ function add_a_department(){
             message: "Name Of Department To Be Added?",
             validate: validate_input
         }
+        // Takes the user input for department name and passes a SQL query to the database
+        // to create that department
     ]).then((dept_add)=>{
         db_connection.query(
             `INSERT INTO department (name)
@@ -127,7 +132,7 @@ function add_a_department(){
         view_all_departments();
         });
     };
-
+// Function for adding a role to database
 function add_a_role(){
     db_connection.query(
         `SELECT * FROM department;
@@ -142,6 +147,7 @@ function add_a_role(){
             type: "list",
             name: "department_id",
             message: "Which Department Will Role Be Added To?",
+            // Adds all departments in database as choice list
             choices: departments
         },
         {
@@ -156,6 +162,7 @@ function add_a_role(){
             message: "What Will Be The Role's Salary?",
             validate: validate_input_number
         }
+        // Takes all user inputs and creates SQL query and makes the query creating the role
     ]).then((role_add)=>{
         db_connection.query(
             `INSERT INTO role (title, salary, department_id)
@@ -166,9 +173,11 @@ function add_a_role(){
     })
         });
 };
-
+// Function for addng a new employee to the database
 function add_an_employee(){
+    // object used to store returned query data
     let employee_data = {};
+    // SQL query to find all departments in the database
     db_connection.query(
         `SELECT * FROM department;`, 
     function(err, department_results){
@@ -184,74 +193,81 @@ function add_an_employee(){
             message: "Which Department Will Employee Be Added To?",
             choices: departments
         }
+        // Creates a SQL query based on the user department choice and passes to SQL
         ]).then((department_choice) => {
             const department_name = departments.find(dept => dept.value === department_choice.department_id);
             employee_data.department_name = department_name.name;
             employee_data.department_id = department_choice.department_id;
+            // Query that returns roles in the user chosen department
             db_connection.query(
                 `SELECT * FROM role WHERE department_id = ${department_choice.department_id};`, 
             function(err, role_results){
-                    if (err) throw err;
-                    const roles = role_results.map(role =>({
-                        name: role.title,
-                        value: role.id
-                }));
-                inquirer.prompt([
-                {
-                    type: "list",
-                    name: "role_id",
-                    message: "What Title Will the Employee Have?",
-                    choices: roles
-                },
-                {
-                    type: "input",
-                    name: "first",
-                    message: "What Is The Employee's First Name?",
-                    validate: validate_input
-                },
-                {
-                    type: "input",
-                    name: "last",
-                    message: "What Is The Employee's Last Name?",
-                    validate: validate_input
-                }
-                ]).then((role_choice)=>{
-                    const role_name = roles.find(dept => dept.value === role_choice.role_id);
-                    employee_data.role_name = role_name.name;
-                    employee_data.role_id = role_choice.role_id;
-                    employee_data.first_name = role_choice.first;
-                    employee_data.last_name = role_choice.last;
-                    db_connection.query(
-                        `SELECT employee.*
-                        FROM employee, role, department
-                        WHERE employee.role_id = role.id
-                          AND role.department_id = department.id
-                          AND department.name = "${employee_data.department_name}"
-                        ORDER BY role.id ASC
-                        LIMIT 1;
-                        `, 
-                        function(err, managers_results){
-                            if (err) throw err;
-                            if(managers_results.length === 0){
-                                employee_data.manager_id = null;
-                                employee_data.manager_name = `${employee_data.first_name} ${employee_data.last_name}`;
-                            }else{
-                                employee_data.manager_id = managers_results[0].id;
-                                employee_data.manager_name = `${managers_results[0].first_name} ${managers_results[0].last_name}`;
-                            };
-                            db_connection.query(
-                                `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-                                    VALUES("${employee_data.first_name}","${employee_data.last_name}", ${employee_data.role_id}, ${employee_data.manager_id})
-                                `);
-                            console.log(`Succesfully Added ${employee_data.first_name} ${employee_data.last_name} To The ${employee_data.department_name} Department With The Role ${employee_data.role_name} With ${employee_data.manager_name} As Their Manager.`)
-                            view_all_employees();
-                        });
+                if (err) throw err;
+                const roles = role_results.map(role =>({
+                    name: role.title,
+                    value: role.id
+            }));
+            inquirer.prompt([
+            {
+                type: "list",
+                name: "role_id",
+                message: "What Title Will the Employee Have?",
+                choices: roles
+            },
+            {
+                type: "input",
+                name: "first",
+                message: "What Is The Employee's First Name?",
+                validate: validate_input
+            },
+            {
+                type: "input",
+                name: "last",
+                message: "What Is The Employee's Last Name?",
+                validate: validate_input
+            }
+            // Query that returns the manager of the chosen role
+            ]).then((role_choice)=>{
+                const role_name = roles.find(dept => dept.value === role_choice.role_id);
+                employee_data.role_name = role_name.name;
+                employee_data.role_id = role_choice.role_id;
+                employee_data.first_name = role_choice.first;
+                employee_data.last_name = role_choice.last;
+                db_connection.query(
+                    `SELECT employee.*
+                    FROM employee, role, department
+                    WHERE employee.role_id = role.id
+                        AND role.department_id = department.id
+                        AND department.name = "${employee_data.department_name}"
+                    ORDER BY role.id ASC
+                    LIMIT 1;
+                    `, 
+                    function(err, managers_results){
+                        if (err) throw err;
+                        // If statement that checks if the length of the managers_results is 0
+                        if(managers_results.length === 0){
+                            // if it returns true will set the manager_id to null making the employee the manager of the role
+                            employee_data.manager_id = null;
+                            // Sets the new employe name as the manager
+                            employee_data.manager_name = `${employee_data.first_name} ${employee_data.last_name}`;
+                        }else{
+                            // if returns false sets the maanger id and name to returned result
+                            employee_data.manager_id = managers_results[0].id;
+                            employee_data.manager_name = `${managers_results[0].first_name} ${managers_results[0].last_name}`;
+                        };
+                        // Final query to add the employee
+                        db_connection.query(
+                            `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                VALUES("${employee_data.first_name}","${employee_data.last_name}", ${employee_data.role_id}, ${employee_data.manager_id})
+                            `);
+                        console.log(`Succesfully Added ${employee_data.first_name} ${employee_data.last_name} To The ${employee_data.department_name} Department With The Role ${employee_data.role_name} With ${employee_data.manager_name} As Their Manager.`)
+                        view_all_employees();
                     });
                 });
             });
-        });    
+        });
+    });    
 };
-    
 
 function update_an_employee_role(){
     let update_data = {}
