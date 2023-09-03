@@ -308,41 +308,46 @@ function update_an_employee_role(){
                     choices: roles
                 }
             ]).then((update_role)=>{
-                const role_name = roles.find(dept => dept.value === update_role.role_id);
-                update_data.role_name = role_name.name;
-                update_data.role_id = update_role.role_id;
-                console.log(update_data)
-                db_connection.query(
-                    `SELECT employee.*
-                    FROM employee, role, department
-                    WHERE employee.role_id = role.id
-                      AND role.department_id = department.id
-                      AND department.name = "${update_data.department_name}"
-                    ORDER BY role.id ASC
-                    LIMIT 1;
-                    `, 
-                    function(err, update_manager){
-                        if (err) throw err;
-                        update_data.manager_id = update_manager[0].id;
-                        update_data.manager_name = `${update_manager[0].first_name} ${update_manager[0].last_name}`;
-                        db_connection.query(`
-                            UPDATE employee
-                            SET
-                                first_name = "${update_data.first_name}",
-                                last_name = "${update_data.last_name}",
-                                role_id = ${update_data.role_id},
-                                manager_id = ${update_data.manager_id}
-                            WHERE
-                                id = ${update_data.id};`);
-                        console.log(`Succesfully Updated ${update_data.first_name} ${update_data.last_name} To The ${update_data.department_name} Department With The Role ${update_data.role_name} With ${update_data.manager_name} As Their Manager.`)
-                        view_all_employees();
-});
-});
-});
-});
-});           
-});
-});
+                    const role_name = roles.find(dept => dept.value === update_role.role_id);
+                    update_data.role_name = role_name.name;
+                    update_data.role_id = update_role.role_id;
+                    console.log(update_data)
+                    db_connection.query(
+                        `SELECT employee.*
+                        FROM employee, role, department
+                        WHERE employee.role_id = role.id
+                        AND role.department_id = department.id
+                        AND department.name = "${update_data.department_name}"
+                        ORDER BY role.id ASC
+                        LIMIT 1;
+                        `, 
+                            function(err, update_manager){
+                                if (err) throw err;
+                                if(update_manager.length === 0){
+                                    update_data.manager_id = null;
+                                    update_data.manager_name = `${update_data.first_name} ${update_data.last_name}`;
+                                }else{
+                                    update_data.manager_id = update_manager[0].id;
+                                    update_data.manager_name = `${update_manager[0].first_name} ${update_manager[0].last_name}`;
+                                };
+                                db_connection.query(`
+                                    UPDATE employee
+                                    SET
+                                        first_name = "${update_data.first_name}",
+                                        last_name = "${update_data.last_name}",
+                                        role_id = ${update_data.role_id},
+                                        manager_id = ${update_data.manager_id}
+                                    WHERE
+                                        id = ${update_data.id};`);
+                                console.log(`Succesfully Updated ${update_data.first_name} ${update_data.last_name} To The ${update_data.department_name} Department With The Role ${update_data.role_name} With ${update_data.manager_name} As Their Manager.`)
+                                view_all_employees();
+                            });
+                        });
+                    });
+                });
+            });           
+        });
+    });
 };
 
 main();
