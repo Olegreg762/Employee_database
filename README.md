@@ -3,7 +3,13 @@
 
   ## Description
   
-  Command Line Interface Application to manager employee roles
+  Command Line Interface Application to manager employee roles.
+
+  Diagram of SQL Database used
+  ![sql database diagram](./images/Screenshot_schema.png)
+
+  Link to video of application demo ⤵️
+  [![screenrecord](./images/screen_shot.png)](https://olegreg762.github.io/Employee_database/)
 
   ## Table of Contents
   * [Installation](#installation)
@@ -38,5 +44,5 @@
 
   ## Questions
   
-  For any questions related to this project contact Use Github or Linkedin<br>
+  For any questions related to this project contact Use [Github](https://github.com/Olegreg762) or [Linkedin](https://www.linkedin.com/in/greg-stevenson-422931a9)<br>
   You can see more of my work on my Github [Olegreg762](https://github.com/Olegreg762)
