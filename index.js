@@ -268,14 +268,17 @@ function add_an_employee(){
         });
     });    
 };
-
+// Function to update an employee
 function update_an_employee_role(){
+    // Object to store the returned querydata 
     let update_data = {}
+    // Query to return all employees
     db_connection.query(
         `SELECT id,
             first_name, last_name FROM employee;`, 
     function(err, employee_list){
         if (err) throw err;
+        // stores employee name and id in object
         const employees = employee_list.map(employee =>({
             name: `${employee.first_name} ${employee.last_name}`,
             value: employee.id,
@@ -290,11 +293,13 @@ function update_an_employee_role(){
             choices: employees
         }
     ]).then((update_employee)=>{
+        // Adds the chosen employee info in object
         const employee_name = employees.find(employee => employee.value === update_employee.employee_id);
         update_data.name = employee_name.name;
         update_data.first_name = employee_name.first_name;
         update_data.last_name = employee_name.last_name;
         update_data.id = update_employee.employee_id;
+        // Query to reeturn departments
         db_connection.query(
             `SELECT * FROM department;
             `, function(err, results){
@@ -311,9 +316,11 @@ function update_an_employee_role(){
                 choices: departments
             }
         ]).then((update_dept) => {
+            // Adds chosen department to object
             const department_name = departments.find(dept => dept.value === update_dept.department_id);
             update_data.department_name = department_name.name;
             update_data.department_id = update_dept.department_id;
+            // Query to return roles based upon the chosen department
             db_connection.query(
                 `SELECT * FROM role WHERE department_id = ${update_dept.department_id};`, 
             function(err, role_results){
@@ -330,10 +337,12 @@ function update_an_employee_role(){
                     choices: roles
                 }
             ]).then((update_role)=>{
+                // Adds chosen role to object
                     const role_name = roles.find(dept => dept.value === update_role.role_id);
                     update_data.role_name = role_name.name;
                     update_data.role_id = update_role.role_id;
                     console.log(update_data)
+                    // Query to return the manager of the department
                     db_connection.query(
                         `SELECT employee.*
                         FROM employee, role, department
@@ -345,13 +354,18 @@ function update_an_employee_role(){
                         `, 
                             function(err, update_manager){
                                 if (err) throw err;
+                                // If statement to check if update_manager is empty 
                                 if(update_manager.length === 0){
+                                    // If result is empty will assign the manger id to null
+                                    // making the updated employee the manager
                                     update_data.manager_id = null;
                                     update_data.manager_name = `${update_data.first_name} ${update_data.last_name}`;
                                 }else{
+                                    // If not empty will assign the department mamanger to the updated emplyee
                                     update_data.manager_id = update_manager[0].id;
                                     update_data.manager_name = `${update_manager[0].first_name} ${update_manager[0].last_name}`;
                                 };
+                                // Query that will update employee data in SQL database
                                 db_connection.query(`
                                     UPDATE employee
                                     SET
