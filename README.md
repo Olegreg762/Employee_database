@@ -8,9 +8,6 @@
   Diagram of SQL Database used
   ![sql database diagram](./images/Screenshot_schema.png)
 
-  Link to video of application demo ⤵️
-  [![screenrecord](./images/screen_shot.png)](https://olegreg762.github.io/Employee_database/)
-
   ## Table of Contents
   * [Installation](#installation)
   * [Usage](#usage)
@@ -27,6 +24,11 @@
   ## Usage
 
   The use case for this project is Tracking the positions that employees currently have, adding employees and updating them.
+
+
+  Link to video of application demo ⤵️
+  [![screenrecord](./images/Screenshot.png)](https://olegreg762.github.io/Employee_database/)
+
 
   ## License
 
